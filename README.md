@@ -9,3 +9,8 @@ Run command inside web container:
 `python manage.py load_players`
 
 ![img.png](img.png)
+
+
+## Get players by hits
+
+http://localhost:8000/api/baseball/players/by-hits/
