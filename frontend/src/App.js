@@ -10,6 +10,9 @@ export default function App() {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [descriptions, setDescriptions] = useState({});
+  const [loadingDesc, setLoadingDesc] = useState({});
+  const [modalPlayerId, setModalPlayerId] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -38,9 +41,49 @@ export default function App() {
     };
   }, []);
 
+  const fetchDescription = async (player) => {
+    if (!player?.id) return;
+    if (descriptions[player.id]) {
+      setModalPlayerId(player.id);
+      return;
+    }
+    setLoadingDesc((s) => ({ ...s, [player.id]: true }));
+    setModalPlayerId(player.id);
+    try {
+      const res = await fetch(`/api/baseball/players/${player.id}/description/`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setDescriptions((s) => ({ ...s, [player.id]: data.description }));
+    } catch (err) {
+      setDescriptions((s) => ({ ...s, [player.id]: `Error: ${err.message}` }));
+    } finally {
+      setLoadingDesc((s) => ({ ...s, [player.id]: false }));
+    }
+  };
+
+  const closeModal = () => setModalPlayerId(null);
+
+  const modalContent = (() => {
+    if (!modalPlayerId) return null;
+    const player = players.find(p => p.id === modalPlayerId);
+    return (
+      <div className="modal-overlay" onClick={closeModal}>
+        <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <button className="modal-close" onClick={closeModal}>&times;</button>
+          <h2>{player?.name}</h2>
+          {loadingDesc[modalPlayerId] ? (
+            <em>Loading description...</em>
+          ) : (
+            <div>{descriptions[modalPlayerId]}</div>
+          )}
+        </div>
+      </div>
+    );
+  })();
+
   return (
     <div className="container">
-      <h1>Baseball Players (Sorted by hits)</h1>
+      <h1>Baseball Players (by hits)</h1>
       {loading && <p>Loading...</p>}
       {error && <p className="error">Error: {error}</p>}
       {!loading && !error && (
@@ -63,8 +106,12 @@ export default function App() {
             </thead>
             <tbody>
               {players.map((p, idx) => (
-                <tr key={`${p.name}-${idx}`}>
-                  <td>{p.name}</td>
+                <tr key={`${p.id}-${idx}`}>
+                  <td>
+                    <button className="link-button" onClick={() => fetchDescription(p)}>
+                      {p.name}
+                    </button>
+                  </td>
                   <td>{p.position}</td>
                   <td>{p.games ?? '-'}</td>
                   <td>{p.at_bat ?? '-'}</td>
@@ -81,6 +128,7 @@ export default function App() {
           </table>
         </div>
       )}
+      {modalContent}
     </div>
   );
 }

@@ -7,3 +7,41 @@ th { background: #fafafa; }
 .error { color: #c00; }
 .table-wrap { overflow-x: auto; }
 
+.link-button { background: none; border: none; color: #0563f2; cursor: pointer; padding: 0; font: inherit; text-decoration: underline; }
+.link-button:hover { text-decoration: none; }
+.desc-row { background: #fbfbff; }
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-content {
+  background: #fff;
+  padding: 28px 24px 18px 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.18);
+  min-width: 320px;
+  max-width: 420px;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+}
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #888;
+  cursor: pointer;
+  line-height: 1;
+}
+.modal-close:hover {
+  color: #c00;
+}
