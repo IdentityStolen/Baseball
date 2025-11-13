@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Player(models.Model):
     """Model representing a baseball player's career batting statistics.
 
@@ -17,7 +18,9 @@ class Player(models.Model):
     hits = models.PositiveIntegerField(blank=True, null=True)
 
     doubles = models.PositiveIntegerField(blank=True, null=True)
-    triples = models.PositiveIntegerField(blank=True, null=True)  # mapped from "third baseman"
+    triples = models.PositiveIntegerField(
+        blank=True, null=True
+    )  # mapped from "third baseman"
     home_runs = models.PositiveIntegerField(blank=True, null=True)
 
     rbi = models.PositiveIntegerField("Runs batted in", blank=True, null=True)
@@ -28,10 +31,18 @@ class Player(models.Model):
     caught_stealing = models.PositiveIntegerField(blank=True, null=True)
 
     # Batting rate stats
-    batting_average = models.DecimalField(max_digits=5, decimal_places=3, blank=True, null=True)
-    on_base_percentage = models.DecimalField(max_digits=5, decimal_places=3, blank=True, null=True)
-    slugging_percentage = models.DecimalField(max_digits=5, decimal_places=3, blank=True, null=True)
-    on_base_plus_slugging = models.DecimalField(max_digits=6, decimal_places=3, blank=True, null=True)
+    batting_average = models.DecimalField(
+        max_digits=5, decimal_places=3, blank=True, null=True
+    )
+    on_base_percentage = models.DecimalField(
+        max_digits=5, decimal_places=3, blank=True, null=True
+    )
+    slugging_percentage = models.DecimalField(
+        max_digits=5, decimal_places=3, blank=True, null=True
+    )
+    on_base_plus_slugging = models.DecimalField(
+        max_digits=6, decimal_places=3, blank=True, null=True
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

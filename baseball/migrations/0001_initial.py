@@ -7,40 +7,76 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Player',
+            name="Player",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('position', models.CharField(blank=True, max_length=10, null=True)),
-                ('games', models.PositiveIntegerField(blank=True, null=True)),
-                ('at_bat', models.PositiveIntegerField(blank=True, null=True)),
-                ('runs', models.PositiveIntegerField(blank=True, null=True)),
-                ('hits', models.PositiveIntegerField(blank=True, null=True)),
-                ('doubles', models.PositiveIntegerField(blank=True, null=True)),
-                ('triples', models.PositiveIntegerField(blank=True, null=True)),
-                ('home_runs', models.PositiveIntegerField(blank=True, null=True)),
-                ('rbi', models.PositiveIntegerField(blank=True, null=True, verbose_name='Runs batted in')),
-                ('walks', models.PositiveIntegerField(blank=True, null=True)),
-                ('strikeouts', models.PositiveIntegerField(blank=True, null=True)),
-                ('stolen_bases', models.PositiveIntegerField(blank=True, null=True)),
-                ('caught_stealing', models.PositiveIntegerField(blank=True, null=True)),
-                ('batting_average', models.DecimalField(blank=True, decimal_places=3, max_digits=5, null=True)),
-                ('on_base_percentage', models.DecimalField(blank=True, decimal_places=3, max_digits=5, null=True)),
-                ('slugging_percentage', models.DecimalField(blank=True, decimal_places=3, max_digits=5, null=True)),
-                ('on_base_plus_slugging', models.DecimalField(blank=True, decimal_places=3, max_digits=6, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("position", models.CharField(blank=True, max_length=10, null=True)),
+                ("games", models.PositiveIntegerField(blank=True, null=True)),
+                ("at_bat", models.PositiveIntegerField(blank=True, null=True)),
+                ("runs", models.PositiveIntegerField(blank=True, null=True)),
+                ("hits", models.PositiveIntegerField(blank=True, null=True)),
+                ("doubles", models.PositiveIntegerField(blank=True, null=True)),
+                ("triples", models.PositiveIntegerField(blank=True, null=True)),
+                ("home_runs", models.PositiveIntegerField(blank=True, null=True)),
+                (
+                    "rbi",
+                    models.PositiveIntegerField(
+                        blank=True, null=True, verbose_name="Runs batted in"
+                    ),
+                ),
+                ("walks", models.PositiveIntegerField(blank=True, null=True)),
+                ("strikeouts", models.PositiveIntegerField(blank=True, null=True)),
+                ("stolen_bases", models.PositiveIntegerField(blank=True, null=True)),
+                ("caught_stealing", models.PositiveIntegerField(blank=True, null=True)),
+                (
+                    "batting_average",
+                    models.DecimalField(
+                        blank=True, decimal_places=3, max_digits=5, null=True
+                    ),
+                ),
+                (
+                    "on_base_percentage",
+                    models.DecimalField(
+                        blank=True, decimal_places=3, max_digits=5, null=True
+                    ),
+                ),
+                (
+                    "slugging_percentage",
+                    models.DecimalField(
+                        blank=True, decimal_places=3, max_digits=5, null=True
+                    ),
+                ),
+                (
+                    "on_base_plus_slugging",
+                    models.DecimalField(
+                        blank=True, decimal_places=3, max_digits=6, null=True
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'Player',
-                'verbose_name_plural': 'Players',
-                'ordering': ['-games', 'name'],
-                'indexes': [models.Index(fields=['name'], name='player_name_idx'), models.Index(fields=['hits'], name='player_hits_idx'), models.Index(fields=['home_runs'], name='player_hr_idx')],
+                "verbose_name": "Player",
+                "verbose_name_plural": "Players",
+                "ordering": ["-games", "name"],
+                "indexes": [
+                    models.Index(fields=["name"], name="player_name_idx"),
+                    models.Index(fields=["hits"], name="player_hits_idx"),
+                    models.Index(fields=["home_runs"], name="player_hr_idx"),
+                ],
             },
         ),
     ]

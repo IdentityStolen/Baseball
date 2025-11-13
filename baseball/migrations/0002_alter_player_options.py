@@ -6,12 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('baseball', '0001_initial'),
+        ("baseball", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='player',
-            options={'ordering': ['-hits', '-home_runs'], 'verbose_name': 'Player', 'verbose_name_plural': 'Players'},
+            name="player",
+            options={
+                "ordering": ["-hits", "-home_runs"],
+                "verbose_name": "Player",
+                "verbose_name_plural": "Players",
+            },
         ),
     ]

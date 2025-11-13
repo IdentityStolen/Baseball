@@ -25,6 +25,7 @@ FIELD_MAP = {
     "On-base Plus Slugging": "on_base_plus_slugging",
 }
 
+
 class Command(BaseCommand):
     help = "Load players from API endpoint into Player model"
 
@@ -58,4 +59,6 @@ class Command(BaseCommand):
             except Exception as e:
                 errors += 1
                 self.stderr.write(f"Error saving player {player_data.get('name')}: {e}")
-        self.stdout.write(f"Done. Created: {created}, Updated: {updated}, Errors: {errors}")
+        self.stdout.write(
+            f"Done. Created: {created}, Updated: {updated}, Errors: {errors}"
+        )
