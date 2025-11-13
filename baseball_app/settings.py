@@ -26,7 +26,12 @@ SECRET_KEY = "django-insecure-e-2u21al@3g)x*1x!3tr0=(r4wd0jpv%d4ko1rq$*q1e0lz-y)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# Allow hostnames used in local development and Docker Compose
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "web",
+]
 
 
 # Application definition
@@ -45,6 +50,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    # Local simple CORS middleware (development only)
+    "baseball.middleware.SimpleCORSMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -130,3 +137,10 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Allow frontend dev server to access API during development
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://web:3000",
+]
