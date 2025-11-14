@@ -153,9 +153,21 @@ export default function App() {
     }
   };
 
+  // Add derived field for hits/games
+  const playersWithHitsPerGame = players.map(p => ({
+    ...p,
+    hits_per_game: p.games ? (p.hits / p.games).toFixed(3) : '-'
+  }));
+
   // Sort players by selected field (descending)
-  const sortedPlayers = [...players].sort((a, b) => {
+  const sortedPlayers = [...playersWithHitsPerGame].sort((a, b) => {
     const field = sortField;
+    // Special handling for hits_per_game (string to float)
+    if (field === 'hits_per_game') {
+      const va = parseFloat(a.hits_per_game) || 0;
+      const vb = parseFloat(b.hits_per_game) || 0;
+      return vb - va;
+    }
     const va = a[field] ?? 0;
     const vb = b[field] ?? 0;
     return vb - va;
@@ -237,6 +249,7 @@ export default function App() {
         <select id="sortField" value={sortField} onChange={e => setSortField(e.target.value)}>
           <option value="hits">Hits</option>
           <option value="home_runs">HR</option>
+          <option value="hits_per_game">Hits/Game</option>
         </select>
       </div>
       {loading && <p>Loading...</p>}
@@ -263,6 +276,7 @@ export default function App() {
                 <th>OBP</th>
                 <th>SLG</th>
                 <th>OPS</th>
+                <th>Hits/Game</th>
                 <th></th>
               </tr>
             </thead>
@@ -290,6 +304,7 @@ export default function App() {
                   <td>{p.on_base_percentage ?? '-'}</td>
                   <td>{p.slugging_percentage ?? '-'}</td>
                   <td>{p.on_base_plus_slugging ?? '-'}</td>
+                  <td>{p.hits_per_game}</td>
                   <td><button className="edit-button" onClick={() => openEditModal(p)}>EDIT</button></td>
                 </tr>
               ))}
