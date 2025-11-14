@@ -77,8 +77,14 @@ export default function App() {
       games: player.games ?? '',
       at_bat: player.at_bat ?? '',
       hits: player.hits ?? '',
+      doubles: player.doubles ?? '',
+      triples: player.triples ?? '',
       home_runs: player.home_runs ?? '',
       rbi: player.rbi ?? '',
+      walks: player.walks ?? '',
+      strikeouts: player.strikeouts ?? '',
+      stolen_bases: player.stolen_bases ?? '',
+      caught_stealing: player.caught_stealing ?? '',
       batting_average: player.batting_average ?? '',
       slugging_percentage: player.slugging_percentage ?? '',
       on_base_plus_slugging: player.on_base_plus_slugging ?? '',
@@ -102,17 +108,24 @@ export default function App() {
   };
 
   const positionOptions = ["LF", "RF", "CF", "1B", "2B", "3B", "SS", "C", "DH", "P"];
+  // Define min/max constants for each field based on dataset
   const intFields = {
     games: [0, 3500],
-    at_bat: [0, 12000],
-    hits: [0, 5000],
-    home_runs: [0, 900],
-    rbi: [0, 2500],
+    at_bat: [0, 14053],
+    hits: [0, 4256],
+    doubles: [8, 746],
+    triples: [4, 177],
+    home_runs: [117, 762],
+    rbi: [418, 2499],
+    walks: [183, 2558],
+    strikeouts: [183, 2597],
+    stolen_bases: [1, 808],
+    caught_stealing: [0, 149],
   };
   const floatFields = {
-    batting_average: [0, 1],
-    slugging_percentage: [0, 1],
-    on_base_plus_slugging: [0, 1],
+    batting_average: [0.231, 0.43],
+    slugging_percentage: [0.34, 0.69],
+    on_base_plus_slugging: [0.671, 1.164],
   };
 
   const handleEditSave = async () => {
@@ -227,8 +240,14 @@ export default function App() {
                 <th>Games</th>
                 <th>AB</th>
                 <th>Hits</th>
+                <th>Doubles</th>
+                <th>Triples</th>
                 <th>HR</th>
                 <th>RBI</th>
+                <th>Walks</th>
+                <th>Strikeouts</th>
+                <th>SB</th>
+                <th>CS</th>
                 <th>AVG</th>
                 <th>OBP</th>
                 <th>SLG</th>
@@ -248,8 +267,14 @@ export default function App() {
                   <td>{p.games ?? '-'}</td>
                   <td>{p.at_bat ?? '-'}</td>
                   <td>{p.hits ?? '-'}</td>
+                  <td>{p.doubles ?? '-'}</td>
+                  <td>{p.triples ?? '-'}</td>
                   <td>{p.home_runs ?? '-'}</td>
                   <td>{p.rbi ?? '-'}</td>
+                  <td>{p.walks ?? '-'}</td>
+                  <td>{p.strikeouts ?? '-'}</td>
+                  <td>{p.stolen_bases ?? '-'}</td>
+                  <td>{p.caught_stealing ?? '-'}</td>
                   <td>{p.batting_average ?? '-'}</td>
                   <td>{p.on_base_percentage ?? '-'}</td>
                   <td>{p.slugging_percentage ?? '-'}</td>

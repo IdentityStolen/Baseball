@@ -5,7 +5,6 @@ import requests
 import logging
 from datetime import date
 from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
 import json
 
 logger = logging.getLogger("baseball")
@@ -193,17 +192,24 @@ def player_update(request, pk):
         return JsonResponse({"error": "Invalid JSON"}, status=400)
     # Editable fields and validation rules
     allowed_positions = ["LF", "RF", "CF", "1B", "2B", "3B", "SS", "C", "DH", "P"]
+    # Use min/max constants for each field
     int_fields = {
         "games": (0, 3500),
-        "at_bat": (0, 12000),
-        "hits": (0, 5000),
-        "home_runs": (0, 900),
-        "rbi": (0, 2500),
+        "at_bat": (0, 14053),
+        "hits": (0, 4256),
+        "doubles": (8, 746),
+        "triples": (4, 177),
+        "home_runs": (117, 762),
+        "rbi": (418, 2499),
+        "walks": (183, 2558),
+        "strikeouts": (183, 2597),
+        "stolen_bases": (1, 808),
+        "caught_stealing": (0, 149),
     }
     float_fields = {
-        "batting_average": (0, 1),
-        "slugging_percentage": (0, 1),
-        "on_base_plus_slugging": (0, 1),
+        "batting_average": (0.231, 0.43),
+        "slugging_percentage": (0.34, 0.69),
+        "on_base_plus_slugging": (0.671, 1.164),
     }
     errors = {}
     # Position
