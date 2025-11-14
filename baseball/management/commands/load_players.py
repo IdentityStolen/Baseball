@@ -48,6 +48,9 @@ class Command(BaseCommand):
             player_data = {}
             for api_field, model_field in FIELD_MAP.items():
                 player_data[model_field] = entry.get(api_field)
+            # Clean name field for question marks
+            if player_data.get("name"):
+                player_data["name"] = player_data["name"].replace("?", "").strip()
             try:
                 obj, created_flag = Player.objects.update_or_create(
                     name=player_data["name"], defaults=player_data
