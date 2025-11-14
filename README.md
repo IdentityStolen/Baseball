@@ -1,5 +1,15 @@
 # Baseball
 
+Baseball players & their stats - Django REST API with React frontend.
+
+
+## Docker setup
+
+1. Clone the repository
+2. cd into the project directory Baseball
+3. Make sure docker desktop is installed & running in the background
+4. Run `docker-compose up --build` to build and start the containers
+5. Access players using UI at http://localhost:3000/
 
 
 ## Example django command run
@@ -11,21 +21,26 @@ Run command inside web container:
 ![img.png](img.png)
 
 
-## Get players by hits
+## Get players by hits (GET)
 
 http://localhost:8000/api/baseball/players/by-hits/
+
+
+## Get Decsription using LLM (GET)
+
+http://localhost:8000/api/baseball/players/{player_id}/description/
+
+e.g. http://localhost:8000/api/baseball/players/1/description/
+
+
+## Update player using EDIT button (PUT)
+
+http://localhost:8000/api/baseball/players/{player_id}/update/
 
 
 ## React Frontend UI
 
 http://localhost:3000/
-
-
-## Get Decsription using LLM
-
-http://localhost:8000/api/baseball/players/{player_id}/description/
-
-e.g. http://localhost:8000/api/baseball/players/1/description/
 
 
 Opportunities for Improvement:
