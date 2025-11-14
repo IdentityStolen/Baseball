@@ -24,6 +24,8 @@ services:
       DB_PASSWORD: baseball_pass
       DB_HOST: db
       DB_PORT: 5432
+    env_file:
+      - .env
     depends_on:
       - db
 

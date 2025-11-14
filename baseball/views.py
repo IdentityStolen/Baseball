@@ -2,6 +2,10 @@ from django.http import JsonResponse
 from .models import Player
 import os
 import requests
+import logging
+from datetime import date
+
+logger = logging.getLogger("baseball")
 
 
 def players_by_hits(request):
@@ -84,10 +88,12 @@ def _build_prompt(player: Player) -> str:
 
 
 def _call_openai(prompt: str) -> str:
-    """Call OpenAI ChatCompletion API (gpt-3.5-turbo) if OPENAI_API_KEY is set. Returns the generated text or raises on error."""
+    """Call OpenAI ChatCompletion API (gpt-4.1) if OPENAI_API_KEY is set. Returns the generated text or raises on error."""
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("OpenAI API key not configured")
+    else:
+        logger.info(f"API Key loaded correctly!")
 
     url = "https://api.openai.com/v1/chat/completions"
     headers = {
@@ -95,7 +101,7 @@ def _call_openai(prompt: str) -> str:
         "Content-Type": "application/json",
     }
     payload = {
-        "model": "gpt-3.5-turbo",
+        "model": "gpt-5-mini",
         "messages": [
             {
                 "role": "system",
@@ -106,14 +112,22 @@ def _call_openai(prompt: str) -> str:
         "max_tokens": 150,
         "temperature": 0.7,
     }
+    logger.info(f"OpenAI payload: {payload}")
     resp = requests.post(url, json=payload, headers=headers, timeout=15)
+    logger.info(f"OpenAI raw response: {resp.text}")
     resp.raise_for_status()
     data = resp.json()
     # Extract assistant reply
+    if "choices" not in data or not data["choices"]:
+        logger.error(f"OpenAI error or empty choices: {data}")
+        raise RuntimeError(f"OpenAI error or empty choices: {data}")
     try:
-        return data["choices"][0]["message"]["content"].strip()
+        llm_output = data["choices"][0]["message"]["content"]
+        logger.info(f"LLM output: {llm_output}")
+        return llm_output
     except Exception as e:
-        raise RuntimeError(f"Invalid response from OpenAI: {e}")
+        logger.error(f"Exception parsing OpenAI response: {e}, data: {data}")
+        raise RuntimeError(f"Invalid response from OpenAI: {e}, data: {data}")
 
 
 def _fallback_description(player: Player) -> str:
@@ -150,6 +164,9 @@ def player_description(request, pk):
     try:
         try:
             text = _call_openai(prompt)
+            logger.info(
+                f"LLM used for player description: id={player.pk}, name={player.name}, date={date.today()}"
+            )
         except Exception:
             # Fallback to template-based description when OpenAI is unavailable
             text = _fallback_description(player)
