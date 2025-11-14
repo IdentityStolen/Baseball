@@ -4,6 +4,9 @@ import os
 import requests
 import logging
 from datetime import date
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+import json
 
 logger = logging.getLogger("baseball")
 
@@ -174,3 +177,70 @@ def player_description(request, pk):
         return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"id": player.pk, "description": text})
+
+
+@csrf_exempt
+def player_update(request, pk):
+    if request.method != "PUT":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    try:
+        player = Player.objects.get(pk=pk)
+    except Player.DoesNotExist:
+        return JsonResponse({"error": "Player not found"}, status=404)
+    try:
+        data = json.loads(request.body.decode())
+    except Exception:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+    # Editable fields and validation rules
+    allowed_positions = ["LF", "RF", "CF", "1B", "2B", "3B", "SS", "C", "DH", "P"]
+    int_fields = {
+        "games": (0, 3500),
+        "at_bat": (0, 12000),
+        "hits": (0, 5000),
+        "home_runs": (0, 900),
+        "rbi": (0, 2500),
+    }
+    float_fields = {
+        "batting_average": (0, 1),
+        "slugging_percentage": (0, 1),
+        "on_base_plus_slugging": (0, 1),
+    }
+    errors = {}
+    # Position
+    pos = data.get("position")
+    if pos not in allowed_positions:
+        errors["position"] = f"Position must be one of: {', '.join(allowed_positions)}"
+    # Int fields
+    for field, (minv, maxv) in int_fields.items():
+        val = data.get(field)
+        if val is not None:
+            try:
+                val = int(val)
+                if not (minv <= val <= maxv):
+                    errors[field] = f"{field} must be between {minv} and {maxv}"
+            except Exception:
+                errors[field] = f"{field} must be an integer"
+    # Float fields
+    for field, (minv, maxv) in float_fields.items():
+        val = data.get(field)
+        if val is not None:
+            try:
+                val = float(val)
+                if not (minv <= val <= maxv):
+                    errors[field] = f"{field} must be between {minv} and {maxv}"
+            except Exception:
+                errors[field] = f"{field} must be a number"
+    if errors:
+        return JsonResponse({"errors": errors}, status=400)
+    # Update fields
+    player.position = pos
+    for field in int_fields:
+        val = data.get(field)
+        if val is not None:
+            setattr(player, field, int(val))
+    for field in float_fields:
+        val = data.get(field)
+        if val is not None:
+            setattr(player, field, float(val))
+    player.save()
+    return JsonResponse({"success": True})

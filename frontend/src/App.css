@@ -45,3 +45,29 @@ th { background: #fafafa; }
 .modal-close:hover {
   color: #c00;
 }
+.edit-button {
+  background: #0563f2;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 14px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-left: 4px;
+}
+.edit-button:hover {
+  background: #034bb5;
+}
+.edit-form label {
+  display: block;
+  margin-bottom: 8px;
+}
+.edit-form input, .edit-form select {
+  margin-left: 8px;
+  padding: 2px 6px;
+  font-size: 1rem;
+}
+.edit-form .error {
+  color: #c00;
+  margin-top: 8px;
+}

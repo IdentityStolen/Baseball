@@ -13,6 +13,10 @@ export default function App() {
   const [descriptions, setDescriptions] = useState({});
   const [loadingDesc, setLoadingDesc] = useState({});
   const [modalPlayerId, setModalPlayerId] = useState(null);
+  const [editPlayerId, setEditPlayerId] = useState(null);
+  const [editForm, setEditForm] = useState(null);
+  const [editError, setEditError] = useState(null);
+  const [editLoading, setEditLoading] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -43,6 +47,8 @@ export default function App() {
 
   const fetchDescription = async (player) => {
     if (!player?.id) return;
+    // Close edit modal if open
+    closeEditModal();
     if (descriptions[player.id]) {
       setModalPlayerId(player.id);
       return;
@@ -61,7 +67,77 @@ export default function App() {
     }
   };
 
+  const openEditModal = (player) => {
+    // Close description modal if open
+    setModalPlayerId(null);
+    setEditPlayerId(player.id);
+    setEditForm({
+      position: player.position || '',
+      games: player.games ?? '',
+      at_bat: player.at_bat ?? '',
+      hits: player.hits ?? '',
+      home_runs: player.home_runs ?? '',
+      rbi: player.rbi ?? '',
+      batting_average: player.batting_average ?? '',
+      slugging_percentage: player.slugging_percentage ?? '',
+      on_base_plus_slugging: player.on_base_plus_slugging ?? '',
+    });
+    setEditError(null);
+    setEditLoading(false);
+  };
+
+  const closeEditModal = () => {
+    setEditPlayerId(null);
+    setEditForm(null);
+    setEditError(null);
+    setEditLoading(false);
+  };
+
   const closeModal = () => setModalPlayerId(null);
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm((f) => ({ ...f, [name]: value }));
+  };
+
+  const positionOptions = ["LF", "RF", "CF", "1B", "2B", "3B", "SS", "C", "DH", "P"];
+  const intFields = {
+    games: [0, 3500],
+    at_bat: [0, 12000],
+    hits: [0, 5000],
+    home_runs: [0, 900],
+    rbi: [0, 2500],
+  };
+  const floatFields = {
+    batting_average: [0, 1],
+    slugging_percentage: [0, 1],
+    on_base_plus_slugging: [0, 1],
+  };
+
+  const handleEditSave = async () => {
+    setEditLoading(true);
+    setEditError(null);
+    const body = { ...editForm };
+    try {
+      const res = await fetch(`/api/baseball/players/${editPlayerId}/update/`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setEditError(data.errors ? Object.values(data.errors).join(' | ') : (data.error || 'Unknown error'));
+        setEditLoading(false);
+        return;
+      }
+      // Update local state
+      setPlayers((ps) => ps.map(p => p.id === editPlayerId ? { ...p, ...editForm } : p));
+      closeEditModal();
+    } catch (err) {
+      setEditError(err.message);
+      setEditLoading(false);
+    }
+  };
 
   const modalContent = (() => {
     if (!modalPlayerId) return null;
@@ -81,9 +157,48 @@ export default function App() {
     );
   })();
 
+  const editModalContent = (() => {
+    if (!editPlayerId || !editForm) return null;
+    const player = players.find(p => p.id === editPlayerId);
+    return (
+      <div className="modal-overlay" onClick={closeEditModal}>
+        <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <button className="modal-close" onClick={closeEditModal}>&times;</button>
+          <h2>Edit {player.name}</h2>
+          <form className="edit-form" onSubmit={e => { e.preventDefault(); handleEditSave(); }}>
+            <div><label>Name: <input value={player.name} readOnly /></label></div>
+            <div>
+              <label>Pos:
+                <select name="position" value={editForm.position} onChange={handleEditChange} required>
+                  <option value="" disabled>Select position</option>
+                  {positionOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+              </label>
+            </div>
+            {Object.entries(intFields).map(([field, [min, max]]) => (
+              <div key={field}>
+                <label>{field.replace(/_/g, ' ').toUpperCase()}: <input type="number" name={field} value={editForm[field]} min={min} max={max} onChange={handleEditChange} required /></label>
+              </div>
+            ))}
+            {Object.entries(floatFields).map(([field, [min, max]]) => (
+              <div key={field}>
+                <label>{field.replace(/_/g, ' ').toUpperCase()}: <input type="number" name={field} value={editForm[field]} min={min} max={max} step="0.001" onChange={handleEditChange} required /></label>
+              </div>
+            ))}
+            {editError && <div className="error">{editError}</div>}
+            <div style={{marginTop:12}}>
+              <button type="submit" disabled={editLoading}>Save</button>
+              <button type="button" onClick={closeEditModal} disabled={editLoading} style={{marginLeft:8}}>Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  })();
+
   return (
     <div className="container">
-      <h1>Baseball Players (by hits)</h1>
+      <h1>Baseball Players</h1>
       {loading && <p>Loading...</p>}
       {error && <p className="error">Error: {error}</p>}
       {!loading && !error && (
@@ -102,6 +217,7 @@ export default function App() {
                 <th>OBP</th>
                 <th>SLG</th>
                 <th>OPS</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -122,6 +238,7 @@ export default function App() {
                   <td>{p.on_base_percentage ?? '-'}</td>
                   <td>{p.slugging_percentage ?? '-'}</td>
                   <td>{p.on_base_plus_slugging ?? '-'}</td>
+                  <td><button className="edit-button" onClick={() => openEditModal(p)}>EDIT</button></td>
                 </tr>
               ))}
             </tbody>
@@ -129,6 +246,7 @@ export default function App() {
         </div>
       )}
       {modalContent}
+      {editModalContent}
     </div>
   );
 }

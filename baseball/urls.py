@@ -8,4 +8,5 @@ urlpatterns = [
         views.player_description,
         name="player-description",
     ),
+    path("players/<int:pk>/update/", views.player_update, name="player-update"),
 ]
