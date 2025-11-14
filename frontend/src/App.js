@@ -17,6 +17,7 @@ export default function App() {
   const [editForm, setEditForm] = useState(null);
   const [editError, setEditError] = useState(null);
   const [editLoading, setEditLoading] = useState(false);
+  const [sortField, setSortField] = useState('hits');
 
   useEffect(() => {
     let mounted = true;
@@ -139,6 +140,14 @@ export default function App() {
     }
   };
 
+  // Sort players by selected field (descending)
+  const sortedPlayers = [...players].sort((a, b) => {
+    const field = sortField;
+    const va = a[field] ?? 0;
+    const vb = b[field] ?? 0;
+    return vb - va;
+  });
+
   const modalContent = (() => {
     if (!modalPlayerId) return null;
     const player = players.find(p => p.id === modalPlayerId);
@@ -199,6 +208,13 @@ export default function App() {
   return (
     <div className="container">
       <h1>Baseball Players</h1>
+      <div style={{marginBottom: '16px'}}>
+        <label htmlFor="sortField">Sort by: </label>
+        <select id="sortField" value={sortField} onChange={e => setSortField(e.target.value)}>
+          <option value="hits">Hits</option>
+          <option value="home_runs">HR</option>
+        </select>
+      </div>
       {loading && <p>Loading...</p>}
       {error && <p className="error">Error: {error}</p>}
       {!loading && !error && (
@@ -221,7 +237,7 @@ export default function App() {
               </tr>
             </thead>
             <tbody>
-              {players.map((p, idx) => (
+              {sortedPlayers.map((p, idx) => (
                 <tr key={`${p.id}-${idx}`}>
                   <td>
                     <button className="link-button" onClick={() => fetchDescription(p)}>
