@@ -218,6 +218,17 @@ export default function App() {
     );
   })();
 
+  useEffect(() => {
+    if ((editPlayerId && editForm) || modalPlayerId) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [editPlayerId, editForm, modalPlayerId]);
+
   return (
     <div className="container">
       <h1>Baseball Players</h1>

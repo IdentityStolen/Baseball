@@ -36,3 +36,4 @@ Opportunities for Improvement:
 4. Caching: Implement caching for frequently accessed data to improve performance.
 5. UI Enhancements: Enhance the frontend UI with better styling and user experience features.
 6. Authentication: Add user authentication and authorization for secure access to the API.
+7. More checks on data ingestion: Validate and clean data during the load_players command to ensure data integrity.
