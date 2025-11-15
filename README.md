@@ -1,6 +1,6 @@
 # Baseball
 
-Baseball players & their stats - Django REST API with React frontend.
+Baseball players & their stats - REST API using DRF as backend and React frontend.
 
 
 ## Docker setup
