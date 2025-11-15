@@ -1,12 +1,14 @@
 from django.urls import path
-from . import views
+from .views import PlayersByHitsAPIView, PlayerDescriptionAPIView, PlayerUpdateAPIView
 
 urlpatterns = [
-    path("players/by-hits/", views.players_by_hits, name="players-by-hits"),
+    path("players/by-hits/", PlayersByHitsAPIView.as_view(), name="players-by-hits"),
     path(
         "players/<int:pk>/description/",
-        views.player_description,
+        PlayerDescriptionAPIView.as_view(),
         name="player-description",
     ),
-    path("players/<int:pk>/update/", views.player_update, name="player-update"),
+    path(
+        "players/<int:pk>/update/", PlayerUpdateAPIView.as_view(), name="player-update"
+    ),
 ]

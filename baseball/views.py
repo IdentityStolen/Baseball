@@ -1,62 +1,14 @@
-from django.http import JsonResponse
 from .models import Player
 import os
 import requests
 import logging
 from datetime import date
-from django.views.decorators.csrf import csrf_exempt
-import json
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import PlayerSerializer, PlayerUpdateSerializer
 
 logger = logging.getLogger("baseball")
-
-
-def players_by_hits(request):
-    """Return a JSON response with players ordered by hits (descending)."""
-    if request.method != "GET":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
-
-    qs = Player.objects.all().order_by("-hits")
-    players = []
-    for p in qs:
-        players.append(
-            {
-                "id": p.pk,
-                "name": p.name,
-                "position": p.position,
-                "games": p.games,
-                "at_bat": p.at_bat,
-                "runs": p.runs,
-                "hits": p.hits,
-                "doubles": p.doubles,
-                "triples": p.triples,
-                "home_runs": p.home_runs,
-                "rbi": p.rbi,
-                "walks": p.walks,
-                "strikeouts": p.strikeouts,
-                "stolen_bases": p.stolen_bases,
-                "caught_stealing": p.caught_stealing,
-                "batting_average": (
-                    float(p.batting_average) if p.batting_average is not None else None
-                ),
-                "on_base_percentage": (
-                    float(p.on_base_percentage)
-                    if p.on_base_percentage is not None
-                    else None
-                ),
-                "slugging_percentage": (
-                    float(p.slugging_percentage)
-                    if p.slugging_percentage is not None
-                    else None
-                ),
-                "on_base_plus_slugging": (
-                    float(p.on_base_plus_slugging)
-                    if p.on_base_plus_slugging is not None
-                    else None
-                ),
-            }
-        )
-
-    return JsonResponse({"players": players}, safe=False)
 
 
 def _build_prompt(player: Player) -> str:
@@ -103,7 +55,7 @@ def _call_openai(prompt: str) -> str:
         "Content-Type": "application/json",
     }
     payload = {
-        "model": "gpt-5-mini",
+        "model": "gpt-3.5-turbo",
         "messages": [
             {
                 "role": "system",
@@ -149,104 +101,54 @@ def _fallback_description(player: Player) -> str:
     return " ".join(parts)
 
 
-def player_description(request, pk):
-    """Return a generated description for a player identified by primary key.
+class PlayersByHitsAPIView(APIView):
+    def get(self, request):
+        qs = Player.objects.all().order_by("-hits")
+        data = PlayerSerializer(qs, many=True).data
+        # DRF's Response handles JSON by default
+        return Response({"players": data}, status=status.HTTP_200_OK)
 
-    If OPENAI_API_KEY is configured in the environment, the server will call OpenAI's ChatCompletions API. Otherwise it will return a deterministic summary generated from stats.
-    """
-    if request.method != "GET":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
 
-    try:
-        player = Player.objects.get(pk=pk)
-    except Player.DoesNotExist:
-        return JsonResponse({"error": "Player not found"}, status=404)
-
-    prompt = _build_prompt(player)
-    try:
+class PlayerDescriptionAPIView(APIView):
+    def get(self, request, pk: int):
         try:
-            text = _call_openai(prompt)
-            logger.info(
-                f"LLM used for player description: id={player.pk}, name={player.name}, date={date.today()}"
+            player = Player.objects.get(pk=pk)
+        except Player.DoesNotExist:
+            return Response(
+                {"error": "Player not found"}, status=status.HTTP_404_NOT_FOUND
             )
-        except Exception:
-            # Fallback to template-based description when OpenAI is unavailable
-            text = _fallback_description(player)
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
 
-    return JsonResponse({"id": player.pk, "description": text})
-
-
-@csrf_exempt
-def player_update(request, pk):
-    if request.method != "PUT":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
-    try:
-        player = Player.objects.get(pk=pk)
-    except Player.DoesNotExist:
-        return JsonResponse({"error": "Player not found"}, status=404)
-    try:
-        data = json.loads(request.body.decode())
-    except Exception:
-        return JsonResponse({"error": "Invalid JSON"}, status=400)
-    # Editable fields and validation rules
-    allowed_positions = ["LF", "RF", "CF", "1B", "2B", "3B", "SS", "C", "DH", "P"]
-    # Use min/max constants for each field
-    int_fields = {
-        "games": (0, 3500),
-        "at_bat": (0, 14053),
-        "hits": (0, 4256),
-        "doubles": (8, 746),
-        "triples": (4, 177),
-        "home_runs": (117, 762),
-        "rbi": (418, 2499),
-        "walks": (183, 2558),
-        "strikeouts": (183, 2597),
-        "stolen_bases": (1, 808),
-        "caught_stealing": (0, 149),
-    }
-    float_fields = {
-        "batting_average": (0.231, 0.43),
-        "slugging_percentage": (0.34, 0.69),
-        "on_base_plus_slugging": (0.671, 1.164),
-    }
-    errors = {}
-    # Position
-    pos = data.get("position")
-    if pos not in allowed_positions:
-        errors["position"] = f"Position must be one of: {', '.join(allowed_positions)}"
-    # Int fields
-    for field, (minv, maxv) in int_fields.items():
-        val = data.get(field)
-        if val is not None:
+        prompt = _build_prompt(player)
+        try:
             try:
-                val = int(val)
-                if not (minv <= val <= maxv):
-                    errors[field] = f"{field} must be between {minv} and {maxv}"
+                text = _call_openai(prompt)
+                logger.info(
+                    f"LLM used for player description: id={player.pk}, name={player.name}, date={date.today()}"
+                )
             except Exception:
-                errors[field] = f"{field} must be an integer"
-    # Float fields
-    for field, (minv, maxv) in float_fields.items():
-        val = data.get(field)
-        if val is not None:
-            try:
-                val = float(val)
-                if not (minv <= val <= maxv):
-                    errors[field] = f"{field} must be between {minv} and {maxv}"
-            except Exception:
-                errors[field] = f"{field} must be a number"
-    if errors:
-        return JsonResponse({"errors": errors}, status=400)
-    # Update fields
-    player.position = pos
-    for field in int_fields:
-        val = data.get(field)
-        if val is not None:
-            setattr(player, field, int(val))
-    for field in float_fields:
-        val = data.get(field)
-        if val is not None:
-            setattr(player, field, float(val))
-    player.save()
-    return JsonResponse({"success": True})
+                text = _fallback_description(player)
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response(
+            {"id": player.pk, "description": text}, status=status.HTTP_200_OK
+        )
+
+
+class PlayerUpdateAPIView(APIView):
+    def put(self, request, pk: int):
+        try:
+            player = Player.objects.get(pk=pk)
+        except Player.DoesNotExist:
+            return Response(
+                {"error": "Player not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        serializer = PlayerUpdateSerializer(player, data=request.data, partial=False)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"success": True}, status=status.HTTP_200_OK)
+        return Response(
+            {"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+        )
